@@ -7,10 +7,11 @@ import { genderTypes, providerTypes, rolesTypes } from "../../utils/generalRules
 const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true, trim: true },
   lastName: { type: String, required: true, trim: true },
-  email: { type: String, unique: true, required: true },
-  password: { 
+  email: { type: String, unique: true, required: true , trim: true },
+  isEmailVerified: { type: Boolean, default: false },
+  password: {
     type: String,
-    required: function(){
+    required: function () {
       return this.provider == providerTypes.system;
     },
     minLength: 8,
@@ -18,11 +19,11 @@ const userSchema = new mongoose.Schema({
   },
   provider: { type: String, enum: Object.values(providerTypes), required: true, default: providerTypes.system },
   gender: { type: String, enum: Object.values(genderTypes), required: true },
-  DOB: { 
-    type: Date, 
-    required: true, 
+  DOB: {
+    type: Date,
+    required: true,
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         const today = new Date();
         const minDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
         return value < today && value <= minDate;
@@ -30,13 +31,15 @@ const userSchema = new mongoose.Schema({
       message: "Date of Birth must be a valid date in the past and at least 18 years ago."
     }
   },
-  mobileNumber: { type: String, required: true, unique: true , trim: true , validate: {
-    validator: function(value) {
-      const regex = /^01[0-2,5]{1}[0-9]{8}$/;
-      return regex.test(value);
-    },
-    message: "Mobile number is not valid"
-  }},
+  phone: {
+    type: String, required: true, unique: true, trim: true, validate: {
+        validator: function (value) {
+          const regex = /^01[0-2,5]{1}[0-9]{8}$/;
+          return regex.test(value);
+        },
+        message: "phone is not valid"
+      }},
+      isPhoneVerified: { type: Boolean, default: false },
   role: { type: String, enum: Object.values(rolesTypes), required: true, default: rolesTypes.user },
   address: { type: String, required: true, trim: true },
   isConfirmed: { type: Boolean, default: false },
@@ -44,7 +47,10 @@ const userSchema = new mongoose.Schema({
   bannedAt: { type: Date },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   changeCredentialTime: { type: Date },
-  profilePic: { secure_url: String, public_id: String },  
+  profilePic: { secure_url: String, public_id: String },
+  identityPic: [{
+    secure_url: String, public_id: String
+  }]
 }, {
   timestamps: true,
   toObject: { virtuals: true },
@@ -57,53 +63,60 @@ userSchema.virtual("userName").get(function () {
 });
 
 userSchema.pre("save", async function (next) {
-  if(this.isNew ||this.isModified("password")){
+  if (this.isNew || this.isModified("password")) {
     this.password = await Hash({
       key: this.password,
       SALT_ROUNDS: process.env.SALT_ROUNDS,
     });
   }
 
-  if(this.isNew ||this.isModified("mobileNumber")){
-    this.mobileNumber =await Encrypt({
-      key: this.mobileNumber,
-      SECRET_KEY: process.env.SECRET_KEY,
-    });
-  }
+  if ((this.isNew || this.isModified("phone")) && this.phone) {
+  this.phone = await Encrypt({
+    key: this.phone,
+    SECRET_KEY: process.env.SECRET_KEY,
+  });
+}
 
   next();
 });
+
 // Middleware for updateOne
 userSchema.pre(["updateOne", "findOneAndUpdate"], async function (next) {
   const update = this.getUpdate();
 
   if (update.password) {
-      update.password = await Hash({
-          key: update.password,
-          SALT_ROUNDS: process.env.SALT_ROUNDS,
-      });
+    update.password = await Hash({
+      key: update.password,
+      SALT_ROUNDS: process.env.SALT_ROUNDS,
+    });
   }
 
-  if (update.mobileNumber) {
-      update.mobileNumber = await Encrypt({
-          key: update.mobileNumber,
-          SECRET_KEY: process.env.SECRET_KEY,
-      });
-  }
+if (update?.phone) {
+  update.phone = await Encrypt({
+    key: update.phone,
+    SECRET_KEY: process.env.SECRET_KEY,
+  });
+}
+
 
   next();
 });
-userSchema.post(['find', 'findOne',"findById"], async function (docs) {
+userSchema.post(['find', 'findOne', "findById"], async function (docs) {
   // Check if docs is an array (for find) or a single document (for findOne)
   if (Array.isArray(docs)) {
-      docs.forEach(async(doc) => {
-          if (doc && doc.mobileNumber) {
-              doc.mobileNumber =await Decrypt({key:doc.mobileNumber,SECRET_KEY: process.env.SECRET_KEY});
-          }
-      });
-  } else if (docs && docs.mobileNumber) { // Handle single document case (for findOne)
-    
-      docs.mobileNumber =await Decrypt({key:docs.mobileNumber, SECRET_KEY:process.env.SECRET_KEY});
+    for (const doc of docs) {
+      if (doc?.phone) {
+        doc.phone = await Decrypt({
+          key: doc.phone,
+          SECRET_KEY: process.env.SECRET_KEY,
+        });
+      }
+    }
+  } else if (docs?.phone) {
+    docs.phone = await Decrypt({
+      key: docs.phone,
+      SECRET_KEY: process.env.SECRET_KEY,
+    });
   }
 });
 

@@ -9,7 +9,7 @@ cloudinary.config({
 export default cloudinary;
 
 export const uploadImage=async(path,folder)=>{
-    const {secure_url,public_id}=await cloudinary.uploader.upload(path,{folder:`job-search-app/${folder}`});
+    const {secure_url,public_id}=await cloudinary.uploader.upload(path,{folder:`iti-final-project-BE/${folder}`});
     return {secure_url,public_id};
 }
 export const deletedImage=async(public_id)=>{

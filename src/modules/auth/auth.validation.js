@@ -14,23 +14,23 @@ export const signUpSchema = {
     DOB: joi.date()
         .max(eighteenYearsAgo) // Must be greater than 18 years ago
         .required(),
-    mobileNumber: generalRuls.phone.required(),
-    provider: joi.string().valid(...Object.values(providerTypes))
+    phone: generalRuls.phone.required(),
+    provider: joi.string().valid(...Object.values(providerTypes)),
+    address: joi.string().required(),
     })
     .required(),
-    address: joi.string().required(),
   files: joi
     .object({
       profilePic: joi.array().items(generalRuls.imageFile("profilePic")),
+      identityPic: joi.array().items(generalRuls.imageFile("identityPic")),
     })
     .required(),
 };
 
 export const confirmEmailSchema = {
-  body: joi
+  params: joi
     .object({
-    email: generalRuls.email.required(),
-    otp: joi.string().length(4).required()
+    token: joi.string().required(),
     })
     .required(),
 };
@@ -43,13 +43,13 @@ export const signInSchema = {
     .required(),
 };
 
-export const loginWithGmailSchema = {
-  body: joi
-    .object({
-      idToken: joi.string().required(),
-    })
-    .required(),
-};
+// export const loginWithGmailSchema = {
+//   body: joi
+//     .object({
+//       idToken: joi.string().required(),
+//     })
+//     .required(),
+// };
 export const forgetPasswordSchema = {
   body: joi
     .object({
@@ -60,12 +60,12 @@ export const forgetPasswordSchema = {
 export const resetPasswordSchema = {
   body: joi
     .object({
-      email: generalRuls.email.required(),
-      otp: joi.string().length(4).required(),
-      newPassword: generalRuls.password.required(),
+      password: generalRuls.password.required(),
+      confirmPassword: joi.string().valid(joi.ref("password")).required(),
     })
     .required(),
-};
-export const refreshTokenSchema = {
   headers:generalRuls.headers.required()
 };
+// export const refreshTokenSchema = {
+//   headers:generalRuls.headers.required()
+// };

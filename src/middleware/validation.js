@@ -1,4 +1,4 @@
-import { AppError, asyncHandler } from "../utils/globalErrorHandling";
+import { AppError, asyncHandler } from "../utils/globalErrorHandling/index.js";
 
 export const validation = (schema) => {
   

@@ -37,7 +37,7 @@ export const emailHtml=({link,message})=>{
                 </tr>
                 <tr>
                 <td>
-                <a href=""  style="margin:10px auto 30px auto;border-radius:4px;padding:10px 20px;border: 0;color:#fff;background-color:#630E2B;;text-decoration: none; font-weight: bold; display: block; width: 30%; ">${message}</a>
+                <a href="${link} " style="margin:10px auto 30px auto;border-radius:4px;padding:10px 20px;border: 0;color:#fff;background-color:#630E2B;;text-decoration: none; font-weight: bold; display: block; width: 30%; ">${message}</a>
                 </td>
                 </tr>
                 </table>
