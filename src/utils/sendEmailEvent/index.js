@@ -5,6 +5,7 @@ import { EventEmitter } from "events";
 import { sendEmail } from "./sendEmail.js";
 import { emailHtml } from "./templet-email.js";
 import { generateToken } from "../token/generateToken.js";
+import { UserModel } from "../../DB/models/user.model.js";
 
 export const eventEmitter = new EventEmitter();
 
@@ -15,16 +16,6 @@ eventEmitter.on("forgetPassword", async ({ email }) => {
   await sendEmailToken({email,subject:"reset password",message:"reset password",mainLink:""});//add mainLink to reset password page
 
 });
-// eventEmitter.on("sendNewEmailConfirmation", async (data) => {
-//   const { email,id } = data;
-//   const otp=customAlphabet("0123456789",4)();
-//   // hash otp
-//   const hashedOtp = await Hash({key:otp,SALT_ROUNDS : process.env.SALT_ROUNDS});
-//   await UserModel.updateOne({tempEmail:email,_id:id},{optNewEmail:hashedOtp})
-//   await sendEmail(email,"confirm email",emailHtml({otp,message:"Email Confirmation"}));
-// });
-
-
 
 async function sendEmailToken({email,subject,message,mainLink}){
   console.log("SIGNATURE_TOKEN_EMAIL",process.env.SIGNATURE_TOKEN_EMAIL);

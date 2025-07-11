@@ -3,8 +3,10 @@ import { uploadImage } from "../../utils/cloudinary/index.js";
 import { AppError, asyncHandler } from "../../utils/globalErrorHandling/index.js";
 import {eventEmitter} from "../../utils/sendEmailEvent/index.js";
 import {generateToken, verifyToken} from "../../utils/token/index.js";
-import {Compare} from "../../utils/hash/index.js";
-import { tokenTypes } from "../../middleware/auth.js";
+import {Compare, Hash} from "../../utils/hash/index.js";
+import { decodedToken, tokenTypes } from "../../middleware/auth.js";
+import { customAlphabet } from 'nanoid';
+import { rolesTypes } from "../../utils/generalRules/index.js";
 
 //----------------------------signUp----------------------------------------------------
 export const signUp = asyncHandler(async (req, res, next) => {
@@ -125,3 +127,14 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
     .status(200)
     .json({ message: "done",  accessToken  });
 });
+
+//----------------------------confirmPhoneNember----------------------------------------------------
+// export const sendPhoneNemberOtp = asyncHandler(async (req, res, next) => {
+//     const otp=customAlphabet("0123456789",4)();
+//   // hash otp
+//   const hashedOtp = await Hash({key:otp,SALT_ROUNDS : process.env.SALT_ROUNDS});
+//   req.user.phoneOTP=hashedOtp;
+//   await sendVerificationCode(req.user.phone,otp);
+//   await req.user.save();
+//   res.status(200).json({ message: "done" });
+// });

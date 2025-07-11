@@ -22,39 +22,43 @@ export const decodedToken = async ({ authorization, tokenType, next }) => {
     return next(new Error("No token provided", { cause: 400 }));
   }
 
-  let REFRESH_SIGNATURE = undefined;
-  let ACESS_SIGNATURE = undefined;
-  let SIGNATURE_TOKEN_EMAIL = undefined;
+  let REFRESH_SIGNATURE, ACESS_SIGNATURE, SIGNATURE_TOKEN_EMAIL;
   if (prefix === roles.admin) {
     REFRESH_SIGNATURE = process.env.REFRESH_SIGNATURE_TOKEN_ADMIN;
     ACESS_SIGNATURE = process.env.ACESS_SIGNATURE_TOKEN_ADMIN;
   } else if (prefix === roles.user) {
     REFRESH_SIGNATURE = process.env.REFRESH_SIGNATURE_TOKEN_USER;
     ACESS_SIGNATURE = process.env.ACESS_SIGNATURE_TOKEN_USER;
-  } else if(prefix === "email"){ 
+  } else if (prefix === "email") {
     SIGNATURE_TOKEN_EMAIL = process.env.SIGNATURE_TOKEN_EMAIL;
-  }else{
+  } else {
     return next(new Error("Invalid token prefix", { cause: 401 }));
-
   }
 
-  const decoded = await verifyToken({
-    token,
-    SIGNATURE:
-      tokenType ==SIGNATURE_TOKEN_EMAIL ? SIGNATURE_TOKEN_EMAIL : tokenTypes.acess ? ACESS_SIGNATURE : REFRESH_SIGNATURE,
-  });
+  let SIGNATURE;
+  if (SIGNATURE_TOKEN_EMAIL) {
+    SIGNATURE = SIGNATURE_TOKEN_EMAIL;
+  } else if (tokenType === tokenTypes.acess) {
+    SIGNATURE = ACESS_SIGNATURE;
+  } else if (tokenType === tokenTypes.refresh) {
+    SIGNATURE = REFRESH_SIGNATURE;
+  } else {
+    return next(new Error("Invalid token type", { cause: 401 }));
+  }
+
+  const decoded = await verifyToken({ token, SIGNATURE });
 
   if (!decoded?.id && !decoded?.email) {
-    return next(new Error("Invalid token", { cause: 401 }));
+    return next(new Error("Invalid token payload", { cause: 401 }));
   }
-  const user =undefined
-  if(decoded?.id){
+
+  let user;
+  if (decoded?.id) {
     user = await UserModel.findById(decoded.id);
-  }else if(decoded?.email){
-    user = await userModel.findOne({ email: decoded.email });
-  }else{
-    return next(new Error("Invalid token", { cause: 401 }));
+  } else if (decoded?.email) {
+    user = await UserModel.findOne({ email: decoded.email });
   }
+
   if (!user) {
     return next(new Error("User not found", { cause: 404 }));
   }
@@ -62,6 +66,7 @@ export const decodedToken = async ({ authorization, tokenType, next }) => {
   if (user?.deletedAt) {
     return next(new Error("User deleted", { cause: 404 }));
   }
+
   return user;
 };
 

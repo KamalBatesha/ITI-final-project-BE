@@ -19,7 +19,8 @@ authRouter.post("/signIn",validation(AV.signInSchema),AS.signIn)
 // authRouter.post("/loginWithGmail",validation(AV.loginWithGmailSchema),AS.loginWithGmail)
 authRouter.post("/forgetPassword",validation(AV.forgetPasswordSchema),AS.forgetPassword)
 authRouter.post("/resetPassword",validation(AV.resetPasswordSchema),authentication,AS.resetPassword)
-// authRouter.post("/refreshToken",validation(AV.refreshTokenSchema),AS.refreshToken)
+authRouter.post("/refreshToken",validation(AV.refreshTokenSchema),AS.refreshToken)
+// authRouter.post("/sendPhoneNemberOtp",validation(AV.refreshTokenSchema),authentication,AS.sendPhoneNemberOtp)
 
 
 

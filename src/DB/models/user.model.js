@@ -50,7 +50,9 @@ const userSchema = new mongoose.Schema({
   profilePic: { secure_url: String, public_id: String },
   identityPic: [{
     secure_url: String, public_id: String
-  }]
+  }],
+  phoneOTP:{type: String},
+  deletedAt: { type: Date },
 }, {
   timestamps: true,
   toObject: { virtuals: true },

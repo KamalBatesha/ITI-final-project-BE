@@ -17,6 +17,7 @@ export const signUpSchema = {
     phone: generalRuls.phone.required(),
     provider: joi.string().valid(...Object.values(providerTypes)),
     address: joi.string().required(),
+    role: joi.string().valid(...Object.values([rolesTypes.user, rolesTypes.provider])).required(),
     })
     .required(),
   files: joi
@@ -66,6 +67,6 @@ export const resetPasswordSchema = {
     .required(),
   headers:generalRuls.headers.required()
 };
-// export const refreshTokenSchema = {
-//   headers:generalRuls.headers.required()
-// };
+export const refreshTokenSchema = {
+  headers:generalRuls.headers.required()
+};
