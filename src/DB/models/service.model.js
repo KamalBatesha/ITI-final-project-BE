@@ -3,9 +3,10 @@ import { days } from "../../utils/generalRules/index.js";
 
 
 const serviceSchema = new mongoose.Schema({
-  title: { type: String, required: true, trim: true, unique: true },
+  title: { type: String, required: true, trim: true},
   description: { type: String, required: true, trim: true },
-  image: { secure_url: String, public_id: String },
+  mainImage: { secure_url: String, public_id: String },
+  images: [{ secure_url: String, public_id: String }],
   price: { type: Number, required: true },
   duration: { type: Number, required: true },
   categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category", required: true },

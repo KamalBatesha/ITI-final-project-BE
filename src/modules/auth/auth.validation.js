@@ -70,3 +70,4 @@ export const resetPasswordSchema = {
 export const refreshTokenSchema = {
   headers:generalRuls.headers.required()
 };
+
