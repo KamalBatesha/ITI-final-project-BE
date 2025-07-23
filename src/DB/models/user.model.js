@@ -3,7 +3,6 @@ import { Hash } from "../../utils/hash/index.js";
 import { Decrypt, Encrypt } from "../../utils/encrypt/index.js";
 import { genderTypes, providerTypes, rolesTypes } from "../../utils/generalRules/index.js";
 
-
 const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true, trim: true },
   lastName: { type: String, required: true, trim: true },
@@ -17,6 +16,11 @@ const userSchema = new mongoose.Schema({
     minLength: 8,
     trim: true,
   },
+  profession: { type: String, trim: true ,
+    required: function () {
+      return this.role == rolesTypes.provider; ;
+    },
+   },
   provider: { type: String, enum: Object.values(providerTypes), required: true, default: providerTypes.system },
   gender: { type: String, enum: Object.values(genderTypes), required: true },
   DOB: {
@@ -58,7 +62,16 @@ const userSchema = new mongoose.Schema({
   toObject: { virtuals: true },
   toJSON: { virtuals: true }
 });
-
+userSchema.virtual("services",{
+  ref:"Service",
+  localField:"_id",
+  foreignField:"providerId"
+})
+userSchema.virtual("workshops",{
+  ref:"WorkShop",
+  localField:"_id",
+  foreignField:"providerId"
+})
 // Virtual Field
 userSchema.virtual("userName").get(function () {
   return `${this.firstName} ${this.lastName}`;
@@ -123,3 +136,4 @@ userSchema.post(['find', 'findOne', "findById"], async function (docs) {
 });
 
 export const UserModel = mongoose.model.User || mongoose.model("User", userSchema);
+export const connectionUser = new Map();

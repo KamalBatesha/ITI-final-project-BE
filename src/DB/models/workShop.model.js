@@ -11,7 +11,7 @@ const workShopSchema = new mongoose.Schema({
     mainImage:{secure_url: String, public_id: String},
     images:[{secure_url: String, public_id: String}],
     deletedBy:{type: mongoose.Schema.Types.ObjectId, ref: "User"},
-    isConfimed:{type: Boolean, default: false},  
+    isConfirmed:{type: Boolean, default: false},  
 }, {
   timestamps: true,
   toObject: { virtuals: true },

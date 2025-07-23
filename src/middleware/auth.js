@@ -7,7 +7,7 @@ const roles = {
   user: "bearer",
 };
 export const tokenTypes = {
-  acess: "acess",
+  access: "access",
   refresh: "refresh",
   email: "email",
 };
@@ -22,13 +22,13 @@ export const decodedToken = async ({ authorization, tokenType, next }) => {
     return next(new Error("No token provided", { cause: 400 }));
   }
 
-  let REFRESH_SIGNATURE, ACESS_SIGNATURE, SIGNATURE_TOKEN_EMAIL;
+  let REFRESH_SIGNATURE, ACCESS_SIGNATURE, SIGNATURE_TOKEN_EMAIL;
   if (prefix === roles.admin) {
     REFRESH_SIGNATURE = process.env.REFRESH_SIGNATURE_TOKEN_ADMIN;
-    ACESS_SIGNATURE = process.env.ACESS_SIGNATURE_TOKEN_ADMIN;
+    ACCESS_SIGNATURE = process.env.ACCESS_SIGNATURE_TOKEN_ADMIN;
   } else if (prefix === roles.user) {
     REFRESH_SIGNATURE = process.env.REFRESH_SIGNATURE_TOKEN_USER;
-    ACESS_SIGNATURE = process.env.ACESS_SIGNATURE_TOKEN_USER;
+    ACCESS_SIGNATURE = process.env.ACCESS_SIGNATURE_TOKEN_USER;
   } else if (prefix === "email") {
     SIGNATURE_TOKEN_EMAIL = process.env.SIGNATURE_TOKEN_EMAIL;
   } else {
@@ -38,8 +38,8 @@ export const decodedToken = async ({ authorization, tokenType, next }) => {
   let SIGNATURE;
   if (SIGNATURE_TOKEN_EMAIL) {
     SIGNATURE = SIGNATURE_TOKEN_EMAIL;
-  } else if (tokenType === tokenTypes.acess) {
-    SIGNATURE = ACESS_SIGNATURE;
+  } else if (tokenType === tokenTypes.access) {
+    SIGNATURE = ACCESS_SIGNATURE;
   } else if (tokenType === tokenTypes.refresh) {
     SIGNATURE = REFRESH_SIGNATURE;
   } else {
@@ -74,7 +74,7 @@ export const authentication = asyncHandler(async (req, res, next) => {
   const { authorization } = req.headers;
   const user = await decodedToken({
     authorization,
-    tokenType: tokenTypes.acess,
+    tokenType: tokenTypes.access,
     next,
   });
 
@@ -91,3 +91,53 @@ export const authorization = (accessRoles = []) => {
   });
 };
 
+
+
+export const authSocket = async (socket) => {
+  try {
+    const { authorization } = socket.handshake.auth;
+    console.log("authorization:", authorization);
+
+    if (!authorization) {
+      return { message: "No authorization header provided", statusCode: 400 };
+    }
+
+    const [prefix, token] = authorization.split(" ");
+    if (!prefix || !token) {
+      return { message: "Invalid authorization format", statusCode: 400 };
+    }
+
+    console.log("Prefix:", prefix);
+    let SIGNATURE;
+    if (prefix.toLowerCase() === 'bearer') {
+      SIGNATURE = process.env.ACCESS_SIGNATURE_TOKEN_USER?.trim();
+    } else if (prefix === roles.admin) {
+      SIGNATURE = process.env.ACCESS_SIGNATURE_TOKEN_ADMIN?.trim();
+    } else {
+      return { message: "Invalid token prefix", statusCode: 401 };
+    }
+
+    const decoded = await verifyToken({ token, SIGNATURE });
+
+    if (!decoded?.id && !decoded?.email) {
+      return { message: "Invalid token payload", statusCode: 401 };
+    }
+
+    let user = decoded?.id
+      ? await UserModel.findById(decoded.id)
+      : await UserModel.findOne({ email: decoded.email });
+
+    if (!user) {
+      return { message: "User not found", statusCode: 404 };
+    }
+
+    if (user?.deletedAt) {
+      return { message: "User deleted", statusCode: 404 };
+    }
+
+    return { user, statusCode: 200 };
+  } catch (err) {
+    console.error("JWT Error:", err.message);
+    return { message: "Invalid or expired token", statusCode: 401 };
+  }
+};

@@ -55,3 +55,24 @@ export const deleteWorlShopOrServiceSchema = {
     .required(),
   headers: generalRuls.headers.required()
 };
+
+export const acceptOrRejectOrderSchema = {
+  body: joi
+    .object({
+    status: joi.string().valid("accepted", "rejected").required(),
+    orderId: generalRuls.id.required(),
+  }),
+  headers: generalRuls.headers.required()
+};
+export const orderDatailsSchema = {
+  body: joi
+    .object({
+    orderId: generalRuls.id.required(),
+    price: joi.number().required(),
+  deliveryDate: joi.date().required(),
+  address: joi.string().required(),
+  paymentMethod: joi.string().valid("cash", "card").required(),
+  comment: joi.string().trim().required(),
+  }),
+  headers: generalRuls.headers.required()
+};

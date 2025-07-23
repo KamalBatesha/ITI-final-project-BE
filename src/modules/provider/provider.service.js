@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { CategoryModel, ServiceModel, WorkShopModel } from "../../DB/models/index.js";
+import { CategoryModel, OrderModel, ServiceModel, WorkShopModel,ChatModel } from "../../DB/models/index.js";
 import { uploadImage } from "../../utils/cloudinary/index.js";
 import { AppError, asyncHandler } from "../../utils/globalErrorHandling/index.js";
 
@@ -33,6 +33,9 @@ export const addWorkShop = asyncHandler(async (req, res, next) => {
 
 //----------------------------addService----------------------------------------------------
 export const addService = asyncHandler(async (req, res, next) => {
+    if(req.user.isConfirmed==false){
+        return next(new AppError("your account is not confirmed", 401 ));
+    }
     if (req.files?.mainImage?.length) {
         req.body.mainImage = await uploadImage(req.files.mainImage[0].path, "workShops");
     }
@@ -101,4 +104,53 @@ export const deleteService = asyncHandler(async (req, res, next) => {
     }else{
         return next(new AppError("you are not the provider of this service", 403));
     }
+});
+
+//----------------------------getMyOrders----------------------------------------------------
+export const getMyOrders = asyncHandler(async (req, res, next) => {
+    const orders=await OrderModel.find({providerId:new mongoose.Types.ObjectId(req.user._id),deletedBy:{$exists:false}});
+    if(orders.length==0){
+        return next(new AppError("you have no orders yet", 404 ));
+    }
+    return res.status(200).json(orders);
+});
+
+//----------------------------acceptOrRejectOrder----------------------------------------------------
+export const acceptOrRejectOrder = asyncHandler(async (req, res, next) => {
+    const order = await OrderModel.findOne({ _id: req.body.orderId,status:"pending", deletedBy: { $exists: false } });
+    if (!order) {
+        return next(new AppError("order not found or deleted", 404));
+    }
+    if(req.user._id.toString()!==order.providerId.toString()){
+        return next(new AppError("you are not the provider of this order", 403));
+    }
+    order.status=req.body.status;
+    await order.save();
+    if (req.body.status === "accepted") {
+  const existingChat = await ChatModel.findOne({
+    userId: order.userId,
+    providerId: order.providerId,
+  });
+
+  if (!existingChat) {
+    await ChatModel.create({ userId: order.userId, providerId: order.providerId });
+  }
+}
+    return res.status(200).json(order);
+});
+
+//----------------------------orderDatails----------------------------------------------------
+export const orderDatails = asyncHandler(async (req, res, next) => {
+    const order = await OrderModel.findOne({ _id: req.params.id,providerId:new mongoose.Types.ObjectId(req.user._id), deletedBy: { $exists: false } });
+    if (!order) {
+        return next(new AppError("order not found or deleted or you are not the provider of this order", 404));
+    }
+    order.price=req.body.price;
+    order.deliveryDate=req.body.deliveryDate;
+    order.address=req.body.address;
+    order.paymentMethod=req.body.paymentMethod;
+    order.comment=req.body.comment;
+    await order.save();
+    return res.status(200).json(order);
+
 });

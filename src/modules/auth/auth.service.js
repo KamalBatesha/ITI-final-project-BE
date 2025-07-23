@@ -17,7 +17,6 @@ export const signUp = asyncHandler(async (req, res, next) => {
     return next(new AppError("email already exist", 409 ));
   }
     const phoneExist = await UserModel.findOne({phone });
-    console.log(phoneExist,"======================");
     
   if (phoneExist) {
     return next(new AppError("phone already exist", 409 ));
@@ -74,15 +73,19 @@ export const signIn = asyncHandler(async (req, res, next) => {
   }
   // generate token
   let refresh_token=null;
-  let acess_token=null;
+  let access_token=null;
+  console.log("SIGNATURE used for token generation:", process.env.ACCESS_SIGNATURE_TOKEN_USER);
   if(user.role=="admin"){
      refresh_token = await generateToken({ payload: { id: user._id ,email}, SIGNATURE: process.env.REFRESH_SIGNATURE_TOKEN_ADMIN, option: { expiresIn: "30d" } });
-     acess_token = await generateToken({ payload: { id: user._id ,email}, SIGNATURE: process.env.ACESS_SIGNATURE_TOKEN_ADMIN, option: { expiresIn: "1d" } });
+     access_token = await generateToken({ payload: { id: user._id ,email}, SIGNATURE: process.env.ACCESS_SIGNATURE_TOKEN_ADMIN, option: { expiresIn: "1d" } });
   }else{
      refresh_token = await generateToken({ payload: { id: user._id ,email}, SIGNATURE: process.env.REFRESH_SIGNATURE_TOKEN_USER, option: { expiresIn: "30d" } });
-     acess_token = await generateToken({ payload: { id: user._id ,email}, SIGNATURE: process.env.ACESS_SIGNATURE_TOKEN_USER, option: { expiresIn: "1d" } });
+     access_token = await generateToken({ payload: { id: user._id ,email}, SIGNATURE: process.env.ACCESS_SIGNATURE_TOKEN_USER, option: { expiresIn: "1d" } });
   }
-  res.status(200).json({ refresh_token, acess_token });
+  console.log({access_token});
+  
+  
+  res.status(200).json({ refresh_token, access_token });
 });
 //----------------------------forgetPassword----------------------------------------------------
 export const forgetPassword = asyncHandler(async (req, res, next) => {
@@ -118,8 +121,8 @@ export const refreshToken = asyncHandler(async (req, res, next) => {
     payload: { email: user.email, id: user._id },
     SIGNATURE:
       user.role == rolesTypes.user
-        ? process.env.ACESS_SIGNATURE_TOKEN_USER
-        : process.env.ACESS_SIGNATURE_TOKEN_ADMIN,
+        ? process.env.ACCESS_SIGNATURE_TOKEN_USER
+        : process.env.ACCESS_SIGNATURE_TOKEN_ADMIN,
     option: { expiresIn: "1d" },
   });
 
