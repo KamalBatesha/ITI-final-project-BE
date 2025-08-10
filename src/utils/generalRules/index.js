@@ -22,7 +22,7 @@ export const generalRuls = {
     accept: joi.string(),
     "accept-encoding": joi.string(),
     connection: joi.string(),
-  }),
+  }).unknown(),
   image: ["image/png", "image/peg", "image/gif", "image/jpeg"],
   video: ["video/mp4"],
   audio: ["audio/mp3"],

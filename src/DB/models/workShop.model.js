@@ -6,12 +6,12 @@ import { genderTypes, providerTypes, rolesTypes } from "../../utils/generalRules
 
 const workShopSchema = new mongoose.Schema({
   providerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    title:{type: String, required: true},
-    description:{type: String, required: true},
-    mainImage:{secure_url: String, public_id: String},
+    title:{type: String},
+    description:{type: String},
+    mainImage:{type:{secure_url: String, public_id: String},required: true},
     images:[{secure_url: String, public_id: String}],
     deletedBy:{type: mongoose.Schema.Types.ObjectId, ref: "User"},
-    isConfirmed:{type: Boolean, default: false},  
+    isConfirmed:{type: Boolean, default: false},
 }, {
   timestamps: true,
   toObject: { virtuals: true },

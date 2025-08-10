@@ -26,14 +26,19 @@ export const idSchema = {
       .object({
       description: joi.string().required(),
       serviceId: generalRuls.id.required(),
+      deliveryDate: joi.date().greater(Date.now()).required(),
     }).required(),
+    files: joi
+    .object({
+      image: joi.array().items(generalRuls.imageFile("image")),
+    }),
     headers: generalRuls.headers.required()
   };
 
-   export const acceptOrderSchema= {
+   export const confirmOrderSchema= {
     params: joi
       .object({
-      orderId: generalRuls.id.required(),
+      id: generalRuls.id.required(),
     }).required(),
     headers: generalRuls.headers.required()
   };

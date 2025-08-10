@@ -5,11 +5,11 @@ import { AppError, asyncHandler } from "../../utils/globalErrorHandling/index.js
 
 //----------------------------confirmAccount----------------------------------------------------
 export const confirmAccount = asyncHandler(async (req, res, next) => {
-    const user = await UserModel.findOne({_id:req.params.id,isConfirmed:false});
+    const user = await UserModel.findOne({_id:req.params.id,confirmed:"pending"});
     if (!user) {
         return next(new AppError("User not found or already confirmed", 404));
     }
-    user.isConfirmed = true;
+    user.confirmed = true;
     await user.save();
     return res.status(200).json(user);
 });
@@ -68,7 +68,7 @@ export const getUnconfirmedServices = asyncHandler(async (req, res, next) => {
 
 //----------------------------getUnconfirmedUsers----------------------------------------------------
 export const getUnconfirmedUsers = asyncHandler(async (req, res, next) => {
-    const users = await UserModel.find({ isConfirmed: false });
+    const users = await UserModel.find({ confirmed:{$ne:"confirmed"}  });
     if (users.length == 0) {
         return next(new AppError("there is no unconfirmed users yet", 404));
     }

@@ -7,10 +7,10 @@ import { AppError, asyncHandler } from "../../utils/globalErrorHandling/index.js
 export const addWorkShop = asyncHandler(async (req, res, next) => {
     if (req.files?.mainImage?.length) {
         req.body.mainImage = await uploadImage(req.files.mainImage[0].path, "workShops");
+    }else{
+        return next(new AppError("Please upload the main image", 400 ));
     }
-    if (req.files?.images?.length == 0) {
-        return next(new AppError("Please upload at least one image", 400));
-    } else {
+    if (req.files?.images?.length > 0) {
         req.body.images = [];
         for (let i = 0; i < req.files?.images?.length; i++) {
             let { secure_url, public_id } = await uploadImage(req.files.images[i].path, "workShops");
@@ -33,28 +33,34 @@ export const addWorkShop = asyncHandler(async (req, res, next) => {
 
 //----------------------------addService----------------------------------------------------
 export const addService = asyncHandler(async (req, res, next) => {
-    if(req.user.isConfirmed==false){
+    if(req.user.confirmed!=="confirmed"){
         return next(new AppError("your account is not confirmed", 401 ));
     }
     if (req.files?.mainImage?.length) {
-        req.body.mainImage = await uploadImage(req.files.mainImage[0].path, "workShops");
+        req.body.mainImage = await uploadImage(req.files.mainImage[0].path, "services");
     }
-    if (req.files?.images?.length == 0) {
-        return next(new AppError("Please upload at least one image", 400));
-    } else {
+    if (req.files?.images?.length !== 0) {
         req.body.images = [];
         for (let i = 0; i < req.files?.images?.length; i++) {
-            let { secure_url, public_id } = await uploadImage(req.files.images[i].path, "workShops");
+            let { secure_url, public_id } = await uploadImage(req.files.images[i].path, "services");
             req.body.images.push({ secure_url, public_id });
         }
     }
-    const category=await CategoryModel.findOne({_id:req.body.categoryId,deletedBy:{$exists:false}});
+    const category=await CategoryModel.findOne({_id:new mongoose.Types.ObjectId(req.user.profession),deletedBy:{$exists:false}});
     if(!category){
         return next(new AppError("Category not found or deleted", 404 ));
     }
     req.body.providerId = new mongoose.Types.ObjectId(req.user._id);
+    req.body.categoryId = new mongoose.Types.ObjectId(req.user.profession);
+    if(req.body.days){
+        req.body.days=JSON.parse(req.body.days);
+    }
 
-    const service = await ServiceModel.create({...req.body,days:JSON.parse(req.body.days)});
+    let service = await ServiceModel.create({...req.body});
+    service=service.populate([
+        {path:"providerId"},
+        {path:"categoryId"},
+    ])
     return res.status(201).json(service);
 });
 
@@ -108,7 +114,11 @@ export const deleteService = asyncHandler(async (req, res, next) => {
 
 //----------------------------getMyOrders----------------------------------------------------
 export const getMyOrders = asyncHandler(async (req, res, next) => {
-    const orders=await OrderModel.find({providerId:new mongoose.Types.ObjectId(req.user._id),deletedBy:{$exists:false}});
+    const orders=await OrderModel.find({providerId:new mongoose.Types.ObjectId(req.user._id),deletedBy:{$exists:false}})
+    .populate([
+        {path:"serviceId"},
+        {path:"userId"},
+    ]);
     if(orders.length==0){
         return next(new AppError("you have no orders yet", 404 ));
     }
@@ -133,7 +143,10 @@ export const acceptOrRejectOrder = asyncHandler(async (req, res, next) => {
   });
 
   if (!existingChat) {
-    await ChatModel.create({ userId: order.userId, providerId: order.providerId });
+    await ChatModel.create({ userId: order.userId, providerId: order.providerId,orderId:order._id });
+  }else{
+    existingChat.orderId=order._id;
+    await existingChat.save();
   }
 }
     return res.status(200).json(order);
@@ -142,6 +155,7 @@ export const acceptOrRejectOrder = asyncHandler(async (req, res, next) => {
 //----------------------------orderDatails----------------------------------------------------
 export const orderDatails = asyncHandler(async (req, res, next) => {
     const order = await OrderModel.findOne({ _id: req.params.id,providerId:new mongoose.Types.ObjectId(req.user._id), deletedBy: { $exists: false } });
+    console.log(req.user._id);
     if (!order) {
         return next(new AppError("order not found or deleted or you are not the provider of this order", 404));
     }

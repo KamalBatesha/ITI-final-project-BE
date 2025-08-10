@@ -3,13 +3,13 @@ import { days, genderTypes, generalRuls, providerTypes, rolesTypes } from "../..
 export const addWorkShopSchema = {
   body: joi
     .object({
-      title: joi.string().required(),
-      description: joi.string().required(),
+      title: joi.string(),
+      description: joi.string(),
     }),
   files: joi
     .object({
       mainImage: joi.array().items(generalRuls.imageFile("mainImage")).required(),
-      images: joi.array().items(generalRuls.imageFile("images")).required(),
+      images: joi.array().items(generalRuls.imageFile("images")),
     })
     .required()
   ,
@@ -21,9 +21,10 @@ export const addServiceSchema = {
     .object({
       title: joi.string().required(),
       description: joi.string().required(),
-      price: joi.number().required(),
-      duration: joi.number().required(),
-      categoryId: generalRuls.id.required(),
+      minPrice: joi.number().required(),
+      maxPrice: joi.number().greater(joi.ref("minPrice")).required(),
+      duration: joi.number(),
+      // categoryId: generalRuls.id.required(),
       days: joi.custom((value, helpers) => {
         const data = JSON.parse(value);
         if (data.length > 0 && data.length <= days.length) {
@@ -38,9 +39,8 @@ export const addServiceSchema = {
   files: joi
     .object({
       mainImage: joi.array().items(generalRuls.imageFile("mainImage")).required(),
-      images: joi.array().items(generalRuls.imageFile("images")).required(),
+      images: joi.array().items(generalRuls.imageFile("images")),
     })
-    .required()
   ,
   headers: generalRuls.headers.required()
 };
@@ -67,12 +67,15 @@ export const acceptOrRejectOrderSchema = {
 export const orderDatailsSchema = {
   body: joi
     .object({
-    orderId: generalRuls.id.required(),
     price: joi.number().required(),
   deliveryDate: joi.date().required(),
   address: joi.string().required(),
-  paymentMethod: joi.string().valid("cash", "card").required(),
   comment: joi.string().trim().required(),
   }),
-  headers: generalRuls.headers.required()
+  headers: generalRuls.headers.required(),
+  params: joi
+    .object({
+      id: generalRuls.id.required(),
+    })
+    .required(),
 };

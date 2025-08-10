@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const chatSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   providerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
   messages: [
     {
       content: {type:String},

@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 import { Hash } from "../../utils/hash/index.js";
 import { Decrypt, Encrypt } from "../../utils/encrypt/index.js";
 import { genderTypes, providerTypes, rolesTypes } from "../../utils/generalRules/index.js";
+import { type } from "os";
 
 const userSchema = new mongoose.Schema({
-  firstName: { type: String, required: true, trim: true },
-  lastName: { type: String, required: true, trim: true },
+  name: { type: String, required: true, trim: true },
   email: { type: String, unique: true, required: true , trim: true },
   isEmailVerified: { type: Boolean, default: false },
   password: {
@@ -16,25 +16,19 @@ const userSchema = new mongoose.Schema({
     minLength: 8,
     trim: true,
   },
-  profession: { type: String, trim: true ,
+  profession: { type:mongoose.Types.ObjectId, ref: "Category" , trim: true ,
+    required: function () {
+      return this.role == rolesTypes.provider; ;
+    },
+   },
+   aboutMe:{
+    type:String,
+    trim:true,
     required: function () {
       return this.role == rolesTypes.provider; ;
     },
    },
   provider: { type: String, enum: Object.values(providerTypes), required: true, default: providerTypes.system },
-  gender: { type: String, enum: Object.values(genderTypes), required: true },
-  DOB: {
-    type: Date,
-    required: true,
-    validate: {
-      validator: function (value) {
-        const today = new Date();
-        const minDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-        return value < today && value <= minDate;
-      },
-      message: "Date of Birth must be a valid date in the past and at least 18 years ago."
-    }
-  },
   phone: {
     type: String, required: true, unique: true, trim: true, validate: {
         validator: function (value) {
@@ -46,15 +40,28 @@ const userSchema = new mongoose.Schema({
       isPhoneVerified: { type: Boolean, default: false },
   role: { type: String, enum: Object.values(rolesTypes), required: true, default: rolesTypes.user },
   address: { type: String, required: true, trim: true },
-  isConfirmed: { type: Boolean, default: false },
-  deletedAt: { type: Date },
+  confirmed: { type: String, default: "pending" ,enum:["pending","confirmed","rejected"]},
+
   bannedAt: { type: Date },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   changeCredentialTime: { type: Date },
-  profilePic: { secure_url: String, public_id: String },
+  profilePic: {type:{
+
+    secure_url: String, public_id: String ,
+  },
+    required: function () {
+    return this.role == rolesTypes.provider; ;
+  }},
   identityPic: [{
-    secure_url: String, public_id: String
-  }],
+    type:{
+
+      secure_url: String, public_id: String
+    },
+    required: function () {
+      return this.role == rolesTypes.provider; ;
+    }
+  },
+],
   phoneOTP:{type: String},
   deletedAt: { type: Date },
 }, {
@@ -73,9 +80,6 @@ userSchema.virtual("workshops",{
   foreignField:"providerId"
 })
 // Virtual Field
-userSchema.virtual("userName").get(function () {
-  return `${this.firstName} ${this.lastName}`;
-});
 
 userSchema.pre("save", async function (next) {
   if (this.isNew || this.isModified("password")) {

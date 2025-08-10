@@ -10,9 +10,8 @@ const orderSchema = new mongoose.Schema({
   description: { type: String, required: true, trim: true },
   image: { secure_url: String, public_id: String },
   price: { type: Number },
-  deliveryDate: { type: Date },
+  deliveryDate: { type: Date ,required: true},
   address: { type: String, trim: true },
-  paymentMethod: { type: String, trim: true },
   comment: { type: String, trim: true },
   deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 }, {

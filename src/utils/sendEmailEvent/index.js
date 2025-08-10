@@ -10,7 +10,7 @@ import { UserModel } from "../../DB/models/user.model.js";
 export const eventEmitter = new EventEmitter();
 
 eventEmitter.on("sendEmailConfirmation", async ({ email }) => {
-  await sendEmailToken({email,subject:"confirm email",message:"Email Confirmation",mainLink:"http://localhost:3000/auth/confirmEmail"});
+  await sendEmailToken({email,subject:"confirm email",message:"Email Confirmation",mainLink:"http://localhost:5173/acountStatus/confirm"});
 });
 eventEmitter.on("forgetPassword", async ({ email }) => {
   await sendEmailToken({email,subject:"reset password",message:"reset password",mainLink:""});//add mainLink to reset password page

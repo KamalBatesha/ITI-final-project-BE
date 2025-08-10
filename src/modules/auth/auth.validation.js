@@ -6,26 +6,24 @@ const eighteenYearsAgo = new Date(currentDate.getFullYear() - 18, currentDate.ge
 export const signUpSchema = {
   body: joi
     .object({
-    firstName: joi.string().required(),
-    lastName: joi.string().required(),
+    name: joi.string().required(),
     email: generalRuls.email.required(),
     password: generalRuls.password.required(),
-    gender: joi.string().valid(...Object.values(genderTypes)).required(),
-    DOB: joi.date()
-        .max(eighteenYearsAgo) // Must be greater than 18 years ago
-        .required(),
+    rePassword: joi.string().valid(joi.ref("password")).required(),
     phone: generalRuls.phone.required(),
     provider: joi.string().valid(...Object.values(providerTypes)),
     address: joi.string().required(),
     role: joi.string().valid(...Object.values([rolesTypes.user, rolesTypes.provider])).required(),
+    aboutMe: joi.string().min(15),
+    profession:generalRuls.id
     })
-    .required(),
+    ,
   files: joi
     .object({
-      profilePic: joi.array().items(generalRuls.imageFile("profilePic")),
-      identityPic: joi.array().items(generalRuls.imageFile("identityPic")),
+      profilePic: joi.array().items(generalRuls.imageFile("profilePic")).required(),
+      identityPic: joi.array().items(generalRuls.imageFile("identityPic")).required(),
     })
-    .required(),
+    
 };
 
 export const confirmEmailSchema = {
@@ -70,4 +68,10 @@ export const resetPasswordSchema = {
 export const refreshTokenSchema = {
   headers:generalRuls.headers.required()
 };
-
+export const ResendConfirmEmailSchema={
+  params: joi
+    .object({
+      email: generalRuls.email.required(),
+    })
+    .required(),
+}

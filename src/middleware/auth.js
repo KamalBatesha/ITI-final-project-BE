@@ -17,7 +17,8 @@ export const decodedToken = async ({ authorization, tokenType, next }) => {
     return next(new Error("No authorization header provided", { cause: 400 }));
   }
 
-  const [prefix, token] = authorization.split(" ");
+const [prefixRaw, token] = authorization.split(" ");
+const prefix = prefixRaw?.toLowerCase();
   if (!prefix || !token) {
     return next(new Error("No token provided", { cause: 400 }));
   }

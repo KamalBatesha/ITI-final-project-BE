@@ -25,6 +25,6 @@ providerRouter.delete("/deleteWorkShop/:id",validation(PV.deleteWorlShopOrServic
 providerRouter.delete("/deleteService/:id",validation(PV.deleteWorlShopOrServiceSchema),authentication,authorization([rolesTypes.provider,rolesTypes.admin]),PS.deleteService)
 providerRouter.get("/getMyOrders",validation(PV.authorizationSchema),authentication,authorization([rolesTypes.provider]),PS.getMyOrders)
 providerRouter.post("/acceptOrRejectOrder",validation(PV.acceptOrRejectOrderSchema),authentication,authorization([rolesTypes.provider]),PS.acceptOrRejectOrder)
-providerRouter.post("/orderDatails",validation(PV.orderDatailsSchema),authentication,authorization([rolesTypes.provider]),PS.orderDatails)
+providerRouter.post("/orderDatails/:id",validation(PV.orderDatailsSchema),authentication,authorization([rolesTypes.provider]),PS.orderDatails)
 
 export default providerRouter;

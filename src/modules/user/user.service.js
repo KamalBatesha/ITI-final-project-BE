@@ -3,6 +3,7 @@ import { UserModel } from "../../DB/models/user.model.js";
 import { rolesTypes } from "../../utils/generalRules/index.js";
 import { AppError, asyncHandler } from "../../utils/globalErrorHandling/index.js";
 import { WorkShopModel,ServiceModel, CategoryModel, OrderModel } from "../../DB/models/index.js";
+import { uploadImage } from "../../utils/cloudinary/index.js";
 
 //----------------------------getMyProfile----------------------------------------------------
 export const getMyProfile = asyncHandler(async (req, res, next) => {
@@ -72,7 +73,7 @@ export const getServiceByName = asyncHandler(async (req, res, next) => {
 
 //----------------------------order----------------------------------------------------
 export const order = asyncHandler(async (req, res, next) => {
-    if(!req.user.isConfirmed){
+    if(req.user.confirmed!=="confirmed"){
         return next(new AppError("your account is not confirmed", 401 ));
     }
     const service=await ServiceModel.findOne({_id:req.body.serviceId,deletedBy:{$exists:false}});
@@ -88,11 +89,14 @@ export const order = asyncHandler(async (req, res, next) => {
     if(!provider){
         return next(new AppError("Provider not found or deleted", 404 ));
     }
-    let order=await OrderModel.create({description:req.body.description,serviceId:service._id,providerId:provider._id,userId:new mongoose.Types.ObjectId(req.user._id)});
+    if(req.files.length!==0){
+        req.body.image = await uploadImage(req.files.image[0].path, "orders");
+    }
+    let order=await OrderModel.create({description:req.body.description,serviceId:service._id,providerId:provider._id,userId:new mongoose.Types.ObjectId(req.user._id),image:req.body.image,deliveryDate:new Date(req.body.deliveryDate)});
     order=await order.populate([
-        {path:"serviceId",select:"title price"},
-        {path:"providerId",select:" firstName lastName userName"},
-        {path:"userId",select:"firstName lastName userName"},
+        {path:"serviceId"},
+        {path:"providerId"},
+        {path:"userId"},
 
     ])
     return res.status(200).json(order);
@@ -100,15 +104,20 @@ export const order = asyncHandler(async (req, res, next) => {
 
 //----------------------------getMyOrders----------------------------------------------------
 export const getMyOrders = asyncHandler(async (req, res, next) => {
-    const orders=await OrderModel.find({userId:new mongoose.Types.ObjectId(req.user._id),deletedBy:{$exists:false}});
+    const orders=await OrderModel.find({userId:new mongoose.Types.ObjectId(req.user._id),deletedBy:{$exists:false}}).populate([
+        {path:"serviceId"},
+        {path:"providerId"},
+        {path:"userId"},
+
+    ]);
     if(orders.length==0){
         return next(new AppError("you have no orders yet", 404 ));
     }
     return res.status(200).json(orders);
 });
-//----------------------------acceptOrder----------------------------------------------------
-export const acceptOrder = asyncHandler(async (req, res, next) => {
-    const order = await OrderModel.findOne({ _id: req.body.orderId,status:"accepted",userId:new mongoose.Types.ObjectId(req.user._id), deletedBy: { $exists: false } });
+//----------------------------confirmOrder----------------------------------------------------
+export const confirmOrder = asyncHandler(async (req, res, next) => {
+    const order = await OrderModel.findOne({ _id: req.params.id,status:"accepted",userId:new mongoose.Types.ObjectId(req.user._id), deletedBy: { $exists: false } });
     if (!order) {
         return next(new AppError("order not found or deleted or you are not the user of this order", 404));
     }

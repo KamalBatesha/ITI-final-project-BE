@@ -11,10 +11,11 @@ const authRouter = Router();
 
 authRouter.post("/signUp",multerHost(generalRuls.image,`you can only upload images of type ${generalRuls.image.join(" or ")}`).fields([
   {name:"profilePic",maxCount:1},
-  {name:"identityPic",maxCount:3},
+  {name:"identityPic",maxCount:2},
 ]),validation(AV.signUpSchema),AS.signUp)
 
 authRouter.get("/confirmEmail/:token",validation(AV.confirmEmailSchema),AS.confirmEmail)
+authRouter.post("/ResendConfirmEmail/:email",validation(AV.ResendConfirmEmailSchema),AS.ResendConfirmEmail)
 authRouter.post("/signIn",validation(AV.signInSchema),AS.signIn)
 // authRouter.post("/loginWithGmail",validation(AV.loginWithGmailSchema),AS.loginWithGmail)
 authRouter.post("/forgetPassword",validation(AV.forgetPasswordSchema),AS.forgetPassword)
