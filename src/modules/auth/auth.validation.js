@@ -20,8 +20,8 @@ export const signUpSchema = {
     ,
   files: joi
     .object({
-      profilePic: joi.array().items(generalRuls.imageFile("profilePic")).required(),
-      identityPic: joi.array().items(generalRuls.imageFile("identityPic")).required(),
+      profilePic: joi.array().items(generalRuls.imageFile("profilePic")),
+      identityPic: joi.array().items(generalRuls.imageFile("identityPic")),
     })
     
 };

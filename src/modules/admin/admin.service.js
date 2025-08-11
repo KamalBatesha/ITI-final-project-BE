@@ -74,3 +74,13 @@ export const getUnconfirmedUsers = asyncHandler(async (req, res, next) => {
     }
     return res.status(200).json(users);
 });
+
+//----------------------------getAllOrders----------------------------------------------------
+export const getAllOrders = asyncHandler(async (req, res, next) => {
+    const orders=await OrderModel.find({deletedBy:{$exists:false}}).sort({createdAt:-1}).populate([
+        {path:"serviceId"},
+        {path:"providerId"},
+        {path:"userId"},
+    ])
+    return res.status(200).json(orders);
+});
