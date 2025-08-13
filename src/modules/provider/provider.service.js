@@ -87,6 +87,21 @@ export const updateService = asyncHandler(async (req, res, next) => {
     if(req.body.days){
         service.days=JSON.parse(req.body.days);
     }
+    if(req.body.title){
+        service.title=req.body.title;
+    }
+    if(req.body.description){
+        service.description=req.body.description;
+    }
+    if (req.body.minPrice) {
+        service.minPrice = req.body.minPrice;
+    }
+    if (req.body.maxPrice) {
+        service.maxPrice = req.body.maxPrice;
+    }
+    if (req.body.duration) {
+        service.duration = req.body.duration;
+    }
 
     await service.save();
     return res.status(201).json(service);
