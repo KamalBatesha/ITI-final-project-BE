@@ -64,6 +64,33 @@ export const addService = asyncHandler(async (req, res, next) => {
     return res.status(201).json(service);
 });
 
+//----------------------------updateService----------------------------------------------------
+export const updateService = asyncHandler(async (req, res, next) => {
+    let service = await ServiceModel.findOne({ _id: req.params.id, deletedBy: { $exists: false } });
+    if(!service){
+        return next(new AppError("service not found or deleted", 404 ));
+    }
+    if (service.providerId.toString() !== req.user._id.toString()) {
+        return next(new AppError("you are not the provider of this service", 403));
+    }
+    if (req.files?.mainImage?.length) {
+        service.mainImage = await uploadImage(req.files.mainImage[0].path, "services");
+    }
+    if (req.files?.images?.length !== 0) {
+        req.body.images = [];
+        for (let i = 0; i < req.files?.images?.length; i++) {
+            let { secure_url, public_id } = await uploadImage(req.files.images[i].path, "services");
+            req.body.images.push({ secure_url, public_id });
+        }
+        service.images=req.body.images;
+    }
+    if(req.body.days){
+        service.days=JSON.parse(req.body.days);
+    }
+
+    await service.save();
+    return res.status(201).json(service);
+});
 //----------------------------getmyWorkShops----------------------------------------------------
 export const getmyWorkShops = asyncHandler(async (req, res, next) => {
     const workShops = await WorkShopModel.find({ providerId: new mongoose.Types.ObjectId(req.user._id), deletedBy: { $exists: false } });
