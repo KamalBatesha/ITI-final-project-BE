@@ -15,5 +15,6 @@ adminRouter.post("/makeAdmin/:id",validation(AV.confirmAccountSchema),authentica
 adminRouter.get("/getUnconfirmedWorkShops",validation(AV.authorizationSchema),authentication,authorization([rolesTypes.admin]),AS.getUnconfirmedWorkShops)
 adminRouter.get("/getUnconfirmedServices",validation(AV.authorizationSchema),authentication,authorization([rolesTypes.admin]),AS.getUnconfirmedServices)
 adminRouter.get("/getUnconfirmedUsers",validation(AV.authorizationSchema),authentication,authorization([rolesTypes.admin]),AS.getUnconfirmedUsers)
+adminRouter.get("/getAllProviders",validation(AV.authorizationSchema),authentication,authorization([rolesTypes.admin]),AS.getAllProviders)
 
 export default adminRouter;

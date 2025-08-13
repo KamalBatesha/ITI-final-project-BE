@@ -84,3 +84,10 @@ export const getAllOrders = asyncHandler(async (req, res, next) => {
     ])
     return res.status(200).json(orders);
 });
+
+//----------------------------getAllProviders----------------------------------------------------
+export const getAllProviders = asyncHandler(async (req, res, next) => {
+    const providers = await UserModel.find({ role: "provider", deletedBy: { $exists: false } }).populate("workshops");
+    
+    return res.status(200).json(providers);
+});

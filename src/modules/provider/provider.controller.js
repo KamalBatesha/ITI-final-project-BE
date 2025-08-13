@@ -16,7 +16,11 @@ providerRouter.post("/addWorkShop",multerHost(generalRuls.image,`you can only up
 providerRouter.post("/addService",multerHost(generalRuls.image,`you can only upload images of type ${generalRuls.image.join(" or ")}`).fields([
   {name:"mainImage",maxCount:1},
   {name:"images",maxCount:10},
-]),validation(PV.addServiceSchema),authentication,authorization([rolesTypes.provider]),PS.addService)
+]), validation(PV.addServiceSchema), authentication, authorization([rolesTypes.provider]), PS.addService)
+providerRouter.put("/updateService",multerHost(generalRuls.image,`you can only upload images of type ${generalRuls.image.join(" or ")}`).fields([
+  {name:"mainImage",maxCount:1},
+  {name:"images",maxCount:10},
+]),validation(PV.updateServiceSchema),authentication,authorization([rolesTypes.provider]),PS.updateService)
 
 
 providerRouter.get("/getMyWorkShops",validation(PV.authorizationSchema),authentication,authorization([rolesTypes.provider]),PS.getmyWorkShops)
