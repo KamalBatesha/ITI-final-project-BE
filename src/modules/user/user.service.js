@@ -32,7 +32,10 @@ export const getProfile = asyncHandler(async (req, res, next) => {
 
 //----------------------------getService----------------------------------------------------
 export const getService = asyncHandler(async (req, res, next) => {
-    let service = await ServiceModel.findOne({_id:req.params.id,deletedBy:{$exists:false}});
+    let service = await ServiceModel.findOne({ _id: req.params.id, deletedBy: { $exists: false } }).populate([
+        {path:"providerId"},
+        {path:"categoryId"}
+    ]);
     if(!service){
         return next(new AppError("Service not found or deleted", 404 ));
     }
