@@ -9,7 +9,7 @@ export const confirmAccount = asyncHandler(async (req, res, next) => {
     if (!user) {
         return next(new AppError("User not found or already confirmed", 404));
     }
-    user.confirmed = true;
+    user.confirmed = "confirmed";
     await user.save();
     return res.status(200).json(user);
 });
