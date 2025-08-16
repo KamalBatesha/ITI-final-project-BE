@@ -17,7 +17,7 @@ providerRouter.post("/addService",multerHost(generalRuls.image,`you can only upl
   {name:"mainImage",maxCount:1},
   {name:"images",maxCount:10},
 ]), validation(PV.addServiceSchema), authentication, authorization([rolesTypes.provider]), PS.addService)
-providerRouter.put("/updateService",multerHost(generalRuls.image,`you can only upload images of type ${generalRuls.image.join(" or ")}`).fields([
+providerRouter.put("/updateService/:id",multerHost(generalRuls.image,`you can only upload images of type ${generalRuls.image.join(" or ")}`).fields([
   {name:"mainImage",maxCount:1},
   {name:"images",maxCount:10},
 ]),validation(PV.updateServiceSchema),authentication,authorization([rolesTypes.provider]),PS.updateService)
