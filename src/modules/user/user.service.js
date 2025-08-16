@@ -114,7 +114,7 @@ export const getMyOrders = asyncHandler(async (req, res, next) => {
 
     ]);
     if(orders.length==0){
-        return next(new AppError("you have no orders yet", 404 ));
+        return next(new AppError("you have no orders yet",202 ));
     }
     return res.status(200).json(orders);
 });
