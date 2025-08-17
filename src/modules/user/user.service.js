@@ -22,8 +22,8 @@ export const getProfile = asyncHandler(async (req, res, next) => {
     let user = await UserModel.findOne({_id:req.params.id,deletedAt:{$exists:false}});
     if(user.role==rolesTypes.provider){
         user=await user.populate([
-            {path:"workshops",match:{deletedBy:{$exists:false},isConfirmed:true},select:"title mainImage"},
-            {path:"services",match:{deletedBy:{$exists:false},isConfirmed:true},select:"title mainImage"}
+            {path:"workshops",match:{deletedBy:{$exists:false}}},
+            {path:"services",match:{deletedBy:{$exists:false}}}
         ])
     }
     return res.status(200).json(user);
