@@ -10,6 +10,8 @@ import { rolesTypes } from "../../utils/generalRules/index.js";
 
 //----------------------------signUp----------------------------------------------------
 export const signUp = asyncHandler(async (req, res, next) => {
+  console.log(req.body);
+  
   const {email,phone} = req.body;
 
 
@@ -61,7 +63,9 @@ export const signUp = asyncHandler(async (req, res, next) => {
       name:req.body.name,
       phone:req.body.phone
      });
-    }
+  }
+  console.log(user);
+  
     const token=await generateToken({payload:{email,id:user._id},SIGNATURE:process.env.ACCESS_SIGNATURE_TOKEN_USER,option:{expiresIn:"1h"}});
     res.status(201).json({token});
   
@@ -74,7 +78,7 @@ export const confirmEmail = asyncHandler(async (req, res, next) => {
   console.log(req.params);
   console.log(token);
   const {email}=await verifyToken({token,SIGNATURE:process.env.SIGNATURE_TOKEN_EMAIL});
-  const user = await UserModel.findOne({email,isEmailVerified:false});
+  const user = await UserModel.findOne({email});
   if (!user) {
     return next(new AppError("user not found or email is already verified", 404 ));
   }

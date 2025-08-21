@@ -39,6 +39,10 @@ export const idSchema = {
     params: joi
       .object({
       id: generalRuls.id.required(),
-    }).required(),
+      }).required(),
+     body: joi
+      .object({
+      status: joi.string().valid("confirmed", "canceled").required(),
+     }),
     headers: generalRuls.headers.required()
   };

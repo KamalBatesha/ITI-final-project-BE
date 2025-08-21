@@ -4,7 +4,7 @@ export const addCategorySchema = {
     body: joi
       .object({
         title: joi.string().required(),
-        description: joi.string().required(),
+        description: joi.string(),
     }),
     files: joi
       .object({

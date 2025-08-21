@@ -118,13 +118,14 @@ export const getMyOrders = asyncHandler(async (req, res, next) => {
     }
     return res.status(200).json(orders);
 });
-//----------------------------confirmOrder----------------------------------------------------
-export const confirmOrder = asyncHandler(async (req, res, next) => {
+//----------------------------confirmOrderOrCancel----------------------------------------------------
+export const confirmOrderOrCancel = asyncHandler(async (req, res, next) => {
     const order = await OrderModel.findOne({ _id: req.params.id,status:"accepted",userId:new mongoose.Types.ObjectId(req.user._id), deletedBy: { $exists: false } });
     if (!order) {
         return next(new AppError("order not found or deleted or you are not the user of this order", 404));
     }
-    order.status="confirmed";
+
+    order.status=req.body.status;
     await order.save();
     return res.status(200).json(order);
 });

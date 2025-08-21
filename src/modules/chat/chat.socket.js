@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import { authSocket } from "../../middleware/auth.js";
-import {registerAccount,logOut} from "./chat.socket.service.js"
+import {registerAccount,logOut, sendMessage} from "./chat.socket.service.js"
 
 export const runIo = async (httpServer) => {
     const io = new Server(httpServer, {
@@ -12,7 +12,8 @@ export const runIo = async (httpServer) => {
         console.log('🔌 A user connected2:', socket.handshake.auth);
 
          await registerAccount(socket);
-         await logOut(socket);
+        await logOut(socket);
+        await sendMessage(socket);
 
         // socket.on('joinRoom', ({ chatId }) => {
         //   socket.join(chatId);

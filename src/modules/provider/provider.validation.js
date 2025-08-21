@@ -99,11 +99,20 @@ export const acceptOrRejectOrderSchema = {
 export const orderDatailsSchema = {
   body: joi
     .object({
-    price: joi.number().required(),
-  deliveryDate: joi.date().required(),
-  address: joi.string().required(),
-  comment: joi.string().trim().required(),
+    price: joi.number(),
+  deliveryDate: joi.date(),
+  address: joi.string(),
+  comment: joi.string().trim(),
   }),
+  headers: generalRuls.headers.required(),
+  params: joi
+    .object({
+      id: generalRuls.id.required(),
+    })
+    .required(),
+};
+
+export const getSpecificOrderSchema = {
   headers: generalRuls.headers.required(),
   params: joi
     .object({

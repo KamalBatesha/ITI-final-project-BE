@@ -4,15 +4,6 @@ import * as CS from "./chat.service.js"
 import * as CV from "./chat.validation.js"
 import { validation } from "../../middleware/validation.js";
 
-
-
-
-
-
-
-
-
-
 const chatRouter=Router()
 chatRouter.get('/',validation(CV.getMyChatsSchema),authentication,CS.getMyChats)
 chatRouter.get('/:id',validation(CV.getChatByIdSchema),authentication,CS.getChatById)

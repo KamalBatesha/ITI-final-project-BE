@@ -100,45 +100,48 @@ export const authSocket = async (socket) => {
     console.log("authorization:", authorization);
 
     if (!authorization) {
-      return { message: "No authorization header provided", statusCode: 400 };
+      throw { message: "No authorization header provided", statusCode: 400 };
     }
 
     const [prefix, token] = authorization.split(" ");
     if (!prefix || !token) {
-      return { message: "Invalid authorization format", statusCode: 400 };
+      throw { message: "Invalid authorization format", statusCode: 400 };
     }
 
-    console.log("Prefix:", prefix);
     let SIGNATURE;
-    if (prefix.toLowerCase() === 'bearer') {
+    if (prefix.toLowerCase() === "bearer") {
       SIGNATURE = process.env.ACCESS_SIGNATURE_TOKEN_USER?.trim();
     } else if (prefix === roles.admin) {
       SIGNATURE = process.env.ACCESS_SIGNATURE_TOKEN_ADMIN?.trim();
     } else {
-      return { message: "Invalid token prefix", statusCode: 401 };
+      throw { message: "Invalid token prefix", statusCode: 401 };
     }
 
     const decoded = await verifyToken({ token, SIGNATURE });
-
     if (!decoded?.id && !decoded?.email) {
-      return { message: "Invalid token payload", statusCode: 401 };
+      throw { message: "Invalid token payload", statusCode: 401 };
     }
 
-    let user = decoded?.id
+    const user = decoded?.id
       ? await UserModel.findById(decoded.id)
       : await UserModel.findOne({ email: decoded.email });
 
     if (!user) {
-      return { message: "User not found", statusCode: 404 };
+      throw { message: "User not found", statusCode: 404 };
     }
 
     if (user?.deletedAt) {
-      return { message: "User deleted", statusCode: 404 };
+      throw { message: "User deleted", statusCode: 404 };
     }
 
+    // ✅ Success
     return { user, statusCode: 200 };
   } catch (err) {
-    console.error("JWT Error:", err.message);
-    return { message: "Invalid or expired token", statusCode: 401 };
+    console.error("JWT Error:", err.message || err);
+
+    return {
+      message: err.message || "Invalid or expired token",
+      statusCode: err.statusCode || 401,
+    };
   }
 };

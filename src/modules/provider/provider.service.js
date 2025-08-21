@@ -167,6 +167,23 @@ export const getMyOrders = asyncHandler(async (req, res, next) => {
     return res.status(200).json(orders);
 });
 
+//----------------------------getSpecificOrder----------------------------------------------------
+export const getSpecificOrder = asyncHandler(async (req, res, next) => {
+    const order=await OrderModel.findById(req.params.id)
+    .populate([
+        {path:"serviceId"},
+        { path: "userId" },
+        { path: "providerId" },
+    ]);
+    if(!order){
+        return next(new AppError("order not found", 404 ));
+    }
+// if(order.providerId.toString()!==req.user._id.toString()){
+//     return next(new AppError("you are not the provider of this order", 403));
+// }
+    return res.status(200).json(order);
+});
+
 //----------------------------acceptOrRejectOrder----------------------------------------------------
 export const acceptOrRejectOrder = asyncHandler(async (req, res, next) => {
     const order = await OrderModel.findOne({ _id: req.body.orderId,status:"pending", deletedBy: { $exists: false } });
@@ -201,11 +218,24 @@ export const orderDatails = asyncHandler(async (req, res, next) => {
     if (!order) {
         return next(new AppError("order not found or deleted or you are not the provider of this order", 404));
     }
-    order.price=req.body.price;
-    order.deliveryDate=req.body.deliveryDate;
-    order.address=req.body.address;
-    order.paymentMethod=req.body.paymentMethod;
-    order.comment=req.body.comment;
+    order.price = req.body.price;
+    if(req.body.deliveryDate){
+        
+        order.deliveryDate=req.body.deliveryDate;
+    }
+    if(req.body.address){
+        
+        order.address=req.body.address;
+    }
+    if(req.body.paymentMethod){
+        
+        order.paymentMethod=req.body.paymentMethod;
+    }
+    if(req.body.comment){
+        
+        order.comment=req.body.comment;
+    }
+
     await order.save();
     return res.status(200).json(order);
 

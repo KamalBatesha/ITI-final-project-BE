@@ -18,7 +18,7 @@ userRouter.post("/order",multerHost(generalRuls.image,`you can only upload image
   {name:"image",maxCount:1},
 ]),validation(UV.orderSchema),authentication,US.order)
 userRouter.get("/getMyOrders",validation(UV.authorizationSchema),authentication,US.getMyOrders)
-userRouter.get("/confirmOrder/:id",validation(UV.confirmOrderSchema),authentication,US.confirmOrder)
+userRouter.post("/confirmOrderOrCancel/:id",validation(UV.confirmOrderSchema),authentication,US.confirmOrderOrCancel)
 
 
 // userRouter.put("/updateMyProfile",multerHost(generalRuls.image,`you can only upload images of type ${generalRuls.image.join(" or ")}`).fields([

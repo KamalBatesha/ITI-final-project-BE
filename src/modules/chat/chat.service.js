@@ -11,7 +11,7 @@ export const getChatById =asyncHandler(async(req,res,next)=>{
     const chat=await ChatModel.findById(req.params.id).populate([
         {path:"userId"},
         {path:"providerId"},
-        {path:"messages.senderId",select:"firstName lastName userName"},
+        // {path:"messages.senderId",select:"firstName lastName userName"},
     ]);
     if(!chat){
         return next(new AppError("chat not found",404));

@@ -31,21 +31,45 @@ export const logOut = async (socket) => {
 }
 
 export const sendMessage = async (socket) => {
-  return socket.on("sendMessage",async ({ destinationId, message }) => {
-    
+  return socket.on("sendMessage", async ({ destinationId, message }) => {
     let data = await authSocket(socket);
     if (data.statusCode != 200) {
       console.log("errorrrrrrrrrrrrrrrrrrrrr:", data);
       return socket.emit("authError", data);
+    }
+    console.log({ destinationId, message });
+    console.log(data);
+    
+    
 
+    const userId = data.user._id;
+    console.log(userId);
+    
+    let chat = await ChatModel.findOneAndUpdate(
+      { $or: [
+          { userId: destinationId, providerId: userId },
+          { userId: userId, providerId: destinationId }
+      ] },
+      { $push: { messages: { content: message, senderId: userId } } },
+      { new: true }
+    );
+    console.log(chat);
+    
+
+    if (!chat) {
+      return socket.emit("messageError", { message: "There is no chat between you and this user" });
     }
-    const userId=data.user._id
-    let chat;
-    chat=await ChatModel.findOneAndUpdate({$or:[{userId:destinationId,providerId:userId},{userId:userId,providerId:destinationId}]},{$push:{messages:{content:message,senderId:userId}}},{new:true})
-    if(!chat){
-      return socket.emit("messageError", { message: "tere is no chat between you and this user" });
+
+    // الرسالة اللي لسه اتضافت
+    const newMessage = chat.messages[chat.messages.length - 1];
+
+    // ✅ رجّع للمرسل الرسالة الخاصة بيه
+    socket.emit("messageSent", { message: newMessage, chat });
+
+    // ✅ ابعتها للطرف الآخر
+    const destSocketId = connectionUser.get(destinationId.toString());
+    if (destSocketId) {
+      socket.to(destSocketId).emit("receiveMessage", { message: newMessage, chat });
     }
-     socket.to(connectionUser.get(userId.toString())).emit("messageSent", { message,chat});
-     socket.to(connectionUser.get(destinationId.toString())).emit("receiveMessage", { message,chat});
-  })
-}
+  });
+};
